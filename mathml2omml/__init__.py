@@ -94,26 +94,24 @@ def _pop_opening_fence_elem(pending_stack, close_fence):
     pending_stack[0] = [fence]
 
 def _append_elem(pending_stack, elem, recommended_form):
-    if not elem.is_embellished():
+    if isinstance(elem, NaryableElement) and elem.is_nary():
+        pending_stack.append(Pending(elem))
+        return
+    core_op = elem.embellished_op()
+    if core_op is None or not isinstance(core_op, MO):
         pending_stack[-1].append(elem)
         return
-    core_op = elem.core_op()
     attrs = op_attrs(core_op, recommended_form)
     if not (attrs['fence'] and attrs['stretchy']):
-        if isinstance(elem, NaryableElement) and elem.is_nary():
-            pending_stack.append(Pending(elem))
-            return
         pending_stack[-1].append(elem)
         return
     form = attrs['form']
     if form == 'prefix':
         fence_attrs = {'open': core_op.text(), 'close': '', 'separators': ''}
         pending_stack.append(Pending(MFenced(fence_attrs)))
-        return
-    if form == 'postfix':
+    elif form == 'postfix':
         _pop_opening_fence_elem(pending_stack, core_op.text())
-        return
-    if form == 'infix':
+    elif form == 'infix':
         for pending in reversed(pending_stack):
             if (isinstance(pending, Pending)
                     and isinstance(pending.base, MFenced)):
@@ -121,6 +119,8 @@ def _append_elem(pending_stack, elem, recommended_form):
                 return
         fence_attrs = {'open': core_op.text(), 'close': '', 'separators': ''}
         pending_stack.append(Pending(MFenced(fence_attrs)))
+    else:
+        pending_stack[-1].append(elem)
 
 def merge_mrow_elems(elements):
     last_idx = len(elements) - 1
@@ -178,7 +178,6 @@ def make_script_style_props(attrs, default_style='normal'):
 def is_stretch_accent(operator):
     attrs = op_attrs(operator)
     return attrs['stretchy'] and attrs['accent']
-
 
 class Run:
     def __init__(self, attrs):
@@ -310,8 +309,8 @@ class MI(Run):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
 class MN(Run):
     """Number.
@@ -322,8 +321,8 @@ class MN(Run):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
     def props(self):
         return make_script_style_props(self.attrs)
@@ -337,10 +336,7 @@ class MO(Run):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return True
-
-    def core_op(self):
+    def embellished_op(self): # pylint: disable=no-self-use
         return self
 
     def props(self):
@@ -355,8 +351,8 @@ class MText(Run):
     def is_space_like(self): # pylint: disable=no-self-use
         return True
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
     def props(self):
         variant = self.attrs.get('mathvariant')
@@ -372,8 +368,8 @@ class MSpace(Run): # TODO
     def is_space_like(self): # pylint: disable=no-self-use
         return True
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
 class MS(Run):
     """String Literal.
@@ -383,8 +379,8 @@ class MS(Run):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
     def text(self):
         lquote = self.attrs.get('lquote', '"')
@@ -438,25 +434,16 @@ class MRow:
     def is_space_like(self):
         return all((c.is_space_like() for c in self.children))
 
-    def is_embellished(self):
-        found = False
+    def embellished_op(self):
+        first_embellished = None
         for child in self.children:
             if child.is_space_like():
                 continue
-            if not child.is_embellished():
-                return False
-            if found:
-                return False
-            found = True
-        return found
-
-    def core_op(self):
-        for child in self.children:
-            if child.is_space_like():
-                continue
-            if child.is_embellished():
-                return child.core_op()
-        return None
+            embellished = child.embellished_op()
+            if embellished is None or first_embellished is not None:
+                return None
+            first_embellished = child
+        return first_embellished
 
     def merge_children(self):
         self.children = merge_mrow_elems(self.children)
@@ -472,8 +459,8 @@ class MSqrt(InferredMRowElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
     def to_str(self):
         return '<m:rad>%s</m:rad>' % to_element(self.mrow)
@@ -490,8 +477,8 @@ class MRoot(FixedArgumentElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
     def to_str(self):
         base = to_element(self.children[0])
@@ -510,11 +497,8 @@ class MFrac(FixedArgumentElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
     def to_str(self):
         num = to_math_arg(self.children[0])
@@ -540,11 +524,8 @@ class MPadded(InferredMRowElement):
     def is_space_like(self):
         return self.mrow.is_space_like()
 
-    def is_embellished(self):
-        return self.mrow.is_embellished()
-
-    def core_op(self):
-        return self.mrow.core_op()
+    def embellished_op(self):
+        return self.mrow.embellished_op()
 
     def to_str(self):
         return str(self.mrow) # TODO
@@ -558,11 +539,8 @@ class MStyle(InferredMRowElement):
     def is_space_like(self):
         return self.mrow.is_space_like()
 
-    def is_embellished(self):
-        return self.mrow.is_embellished()
-
-    def core_op(self):
-        return self.mrow.core_op()
+    def embellished_op(self):
+        return self.mrow.embellished_op()
 
     def to_str(self):
         return str(self.mrow) # TODO
@@ -578,11 +556,8 @@ class MPhantom(InferredMRowElement):
     def is_space_like(self):
         return self.mrow.is_space_like()
 
-    def is_embellished(self):
-        return self.mrow.is_embellished()
-
-    def core_op(self):
-        return self.mrow.core_op()
+    def embellished_op(self):
+        return self
 
     def to_str(self):
         return ('<m:phant>'
@@ -629,8 +604,8 @@ class MFenced:
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
 class MEnclose(InferredMRowElement):
     """Enclose Expression Inside Notation.
@@ -643,8 +618,8 @@ class MEnclose(InferredMRowElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
     def to_str(self): # TODO borderBoxPr
         return ('<m:borderBox>'
@@ -666,11 +641,8 @@ class MSub(NaryableElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
     def is_nary(self):
         return isinstance(self.children[0], MO)
@@ -698,11 +670,8 @@ class MSup(NaryableElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
     def is_nary(self):
         return isinstance(self.children[0], MO)
@@ -730,11 +699,8 @@ class MSubSup(NaryableElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
     def is_nary(self):
         return isinstance(self.children[0], MO)
@@ -768,11 +734,8 @@ class MUnder(NaryableElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
     def is_nary(self):
         return (isinstance(self.children[0], MO)
@@ -812,11 +775,8 @@ class MOver(NaryableElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
     def is_nary(self):
         return (isinstance(self.children[0], MO)
@@ -855,11 +815,8 @@ class MUnderOver(NaryableElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
     def is_nary(self):
         return (isinstance(self.children[0], MO)
@@ -970,11 +927,8 @@ class MMultiScripts:
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self):
-        return self.children[0].is_embellished()
-
-    def core_op(self):
-        return self.children[0].core_op()
+    def embellished_op(self):
+        return self
 
 class MTable:
     """Table or Matrix
@@ -1003,8 +957,8 @@ class MTable:
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
 class MTableRow:
     """Raw in Table or Matrix.
@@ -1029,8 +983,8 @@ class MTableRow:
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
 class MTableData(InferredMRowElement):
     """Entry in Table or Matrix.
@@ -1041,8 +995,8 @@ class MTableData(InferredMRowElement):
     def is_space_like(self): # pylint: disable=no-self-use
         return False
 
-    def is_embellished(self): # pylint: disable=no-self-use
-        return False
+    def embellished_op(self): # pylint: disable=no-self-use
+        return None
 
     def to_str(self):
         return str(self.mrow)
