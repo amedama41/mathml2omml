@@ -231,7 +231,7 @@ class NaryableElement:
     name = ''
     num_args = 4
     num_nary_args = 4
-    nary_location = 'subSup'
+    default_script_location = 'subSup'
 
     def __init__(self, attrs, ):
         self.children = []
@@ -257,7 +257,7 @@ class NaryableElement:
                 '<m:sub>%s</m:sub>'
                 '<m:sup>%s</m:sup>'
                 '%s'
-                '</m:nary>') % (base, self.nary_location, sub, sup, elem)
+                '</m:nary>') % (base, self.script_location(), sub, sup, elem)
 
     def append(self, child):
         if len(self.children) == self._max_num_args():
@@ -274,6 +274,12 @@ class NaryableElement:
 
     def nary_elems(self):
         return self.children
+
+    def script_location(self):
+        attrs = op_attrs(self.children[0])
+        if attrs['movablelimits']:
+            return 'undOvr'
+        return self.default_script_location
 
     def to_str(self):
         pass
@@ -641,7 +647,6 @@ class MSub(NaryableElement):
     name = 'msub'
     num_args = 2
     num_nary_args = 3
-    nary_location = 'subSup'
 
     def is_space_like(self): # pylint: disable=no-self-use
         return False
@@ -667,7 +672,6 @@ class MSup(NaryableElement):
     name = 'msup'
     num_args = 2
     num_nary_args = 3
-    nary_location = 'subSup'
 
     def is_space_like(self): # pylint: disable=no-self-use
         return False
@@ -693,7 +697,6 @@ class MSubSup(NaryableElement):
     name = 'msubsup'
     num_args = 3
     num_nary_args = 4
-    nary_location = 'subSup'
 
     def is_space_like(self): # pylint: disable=no-self-use
         return False
@@ -725,7 +728,7 @@ class MUnder(NaryableElement):
     name = 'munder'
     num_args = 2
     num_nary_args = 3
-    nary_location = 'undOvr'
+    default_script_location = 'undOvr'
 
     def is_space_like(self): # pylint: disable=no-self-use
         return False
@@ -762,7 +765,7 @@ class MOver(NaryableElement):
     name = 'mover'
     num_args = 2
     num_nary_args = 3
-    nary_location = 'undOvr'
+    default_script_location = 'undOvr'
 
     def is_space_like(self): # pylint: disable=no-self-use
         return False
@@ -798,7 +801,7 @@ class MUnderOver(NaryableElement):
     name = 'munderover'
     num_args = 3
     num_nary_args = 4
-    nary_location = 'undOvr'
+    default_script_location = 'undOvr'
 
     def is_space_like(self): # pylint: disable=no-self-use
         return False
