@@ -48,7 +48,7 @@ def op_attrs(operator, recommended_form='infix'):
         'maxsize': 'infinity', 'minsize': '100%',
         'largeop': False, 'movablelimits': False, 'accent': False,
     }
-    content = operator.text()
+    content = operator.text().strip()
     for form in [recommended_form, 'infix', 'prefix', 'postfix']:
         dict_attrs = OP_DICT.get((content, form))
         if dict_attrs is not None:
