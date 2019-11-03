@@ -265,7 +265,12 @@ class NaryableElement:
         self.children.append(child)
 
     def is_nary(self):
-        pass
+        if not self.children:
+            return False
+        if not isinstance(self.children[0], MO):
+            return False
+        attrs = op_attrs(self.children[0])
+        return attrs['largeop'] and attrs['form'] == 'prefix'
 
     def nary_elems(self):
         return self.children
@@ -274,7 +279,7 @@ class NaryableElement:
         pass
 
     def _max_num_args(self):
-        if self.children and self.is_nary():
+        if self.is_nary():
             return max(self.num_args, self.num_nary_args)
         return self.num_args
 
@@ -644,9 +649,6 @@ class MSub(NaryableElement):
     def embellished_op(self):
         return self
 
-    def is_nary(self):
-        return isinstance(self.children[0], MO)
-
     def nary_elems(self):
         return (self.children[0], self.children[1], Element(), self.children[2])
 
@@ -673,9 +675,6 @@ class MSup(NaryableElement):
     def embellished_op(self):
         return self
 
-    def is_nary(self):
-        return isinstance(self.children[0], MO)
-
     def nary_elems(self):
         return (self.children[0], Element(), self.children[1], self.children[2])
 
@@ -701,9 +700,6 @@ class MSubSup(NaryableElement):
 
     def embellished_op(self):
         return self
-
-    def is_nary(self):
-        return isinstance(self.children[0], MO)
 
     def nary_elems(self):
         return self.children
@@ -736,10 +732,6 @@ class MUnder(NaryableElement):
 
     def embellished_op(self):
         return self
-
-    def is_nary(self):
-        return (isinstance(self.children[0], MO)
-                and op_attrs(self.children[0], 'infix')['largeop'])
 
     def nary_elems(self):
         return (self.children[0], self.children[1], Element(), self.children[2])
@@ -778,10 +770,6 @@ class MOver(NaryableElement):
     def embellished_op(self):
         return self
 
-    def is_nary(self):
-        return (isinstance(self.children[0], MO)
-                and op_attrs(self.children[0], 'infix')['largeop'])
-
     def nary_elems(self):
         return (self.children[0], Element(), self.children[1], self.children[2])
 
@@ -817,10 +805,6 @@ class MUnderOver(NaryableElement):
 
     def embellished_op(self):
         return self
-
-    def is_nary(self):
-        return (isinstance(self.children[0], MO)
-                and op_attrs(self.children[0], 'infix')['largeop'])
 
     def nary_elems(self):
         return self.children
