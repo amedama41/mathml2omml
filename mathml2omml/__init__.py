@@ -15,6 +15,31 @@ INVISIBLE_CHARS = [
 ]
 INVISIBLE_CHAR_PATTERN = '[%s]' % ''.join(INVISIBLE_CHARS)
 
+def to_box(elem):
+    if isinstance(elem, Element):
+        return '<m:box>' + str(elem) + '</m:box>'
+    return str(elem)
+
+def to_element(elem):
+    if not isinstance(elem, Element):
+        return str(Element(elem))
+    return str(elem)
+
+def to_math_arg(elem):
+    if isinstance(elem, Element):
+        return ''.join(to_box(c) for c in elem.children)
+    return str(elem)
+
+class Element:
+    def __init__(self, *children):
+        self.children = list(children)
+
+    def append(self, child):
+        self.children.append(child)
+
+    def __str__(self):
+        return '<m:e>%s</m:e>' % ''.join(to_box(c) for c in self.children)
+
 def op_attrs(operator, recommended_form='infix'):
     attrs = {
         'fence': False, 'separator': False,
@@ -125,14 +150,6 @@ def merge_mrow_elems(elements):
         pending_stack[-1].append(pending.fix())
     return elements[0:first_idx] + new_elements + elements[last_idx+1:]
 
-def to_element(elem):
-    return str(elem) if isinstance(elem, MRow) else str(Element(elem))
-
-def to_math_arg(elem):
-    if isinstance(elem, (Element, MRow)):
-        return ''.join(to_math_arg(c) for c in elem.children)
-    return str(elem)
-
 def make_script_style_props(attrs, default_style='normal'):
     script_list = [
         'script', 'fraktur', 'sans-serif', 'monospace', 'double-struck', 'roman'
@@ -162,15 +179,6 @@ def is_stretch_accent(operator):
     attrs = op_attrs(operator)
     return attrs['stretchy'] and attrs['accent']
 
-class Element:
-    def __init__(self, *children):
-        self.children = list(children)
-
-    def append(self, child):
-        self.children.append(child)
-
-    def __str__(self):
-        return '<m:e>%s</m:e>' % ''.join(to_math_arg(c) for c in self.children)
 
 class Run:
     def __init__(self, attrs):
@@ -401,7 +409,7 @@ class Math(InferredMRowElement):
     name = 'math'
 
     def to_str(self):
-        xml_text = ''.join(to_math_arg(c) for c in self.mrow.children)
+        xml_text = ''.join(to_box(c) for c in self.mrow.children)
         return '<m:oMath>%s</m:oMath>' % xml_text
 
 class MRow:
@@ -422,7 +430,7 @@ class MRow:
         self.attrs = attrs
 
     def __str__(self):
-        return '<m:e>%s</m:e>' % ''.join(to_math_arg(c) for c in self.children)
+        return '<m:box>%s</m:box>' % Element(*self.children)
 
     def append(self, child):
         self.children.append(child)
@@ -468,7 +476,7 @@ class MSqrt(InferredMRowElement):
         return False
 
     def to_str(self):
-        return '<m:rad>%s</m:rad>' % self.mrow
+        return '<m:rad>%s</m:rad>' % to_element(self.mrow)
 
 class MRoot(FixedArgumentElement):
     """Radical.
@@ -580,7 +588,7 @@ class MPhantom(InferredMRowElement):
         return ('<m:phant>'
                 '<m:phantPr><m:show m:val="0"/></m:phantPr>'
                 '%s'
-                '</m:phant>') % self.mrow
+                '</m:phant>') % to_element(self.mrow)
 
 class MFenced:
     """Expression Inside Pair of Fences.
@@ -641,7 +649,7 @@ class MEnclose(InferredMRowElement):
     def to_str(self): # TODO borderBoxPr
         return ('<m:borderBox>'
                 '%s'
-                '</m:borderBox>') % self.mrow
+                '</m:borderBox>') % to_element(self.mrow)
 
 class MSub(NaryableElement):
     """Subscript.
@@ -1011,7 +1019,7 @@ class MTableRow:
         self.children = list(children)
 
     def __str__(self):
-        return '<m:mr>%s</m:mr>' % ''.join(str(c) for c in self.children)
+        return '<m:mr>%s</m:mr>' % ''.join(to_element(c) for c in self.children)
 
     def append(self, child):
         if not isinstance(child, MTableData):

@@ -11,9 +11,9 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>x</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_identifiers2(self):
         mathml = '<math><mrow><mi>x</mi><mi>y</mi><mi>z</mi></mrow></math>'
@@ -22,11 +22,11 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>x</m:t></m:r>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>y</m:t></m:r>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>z</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_identifiers3(self):
         mathml = '<math><mrow><mi>xyz</mi></mrow></math>'
@@ -35,9 +35,9 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>xyz</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_numbers1(self):
         mathml = '<math><mrow><mn>3</mn></mrow></math>'
@@ -46,9 +46,9 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>3</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_numbers2(self):
         mathml = '<math><mrow><mn>444</mn></mrow></math>'
@@ -57,9 +57,9 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>444</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_numbers3(self):
         mathml = '<math><mrow><mn>12.34</mn></mrow></math>'
@@ -68,9 +68,9 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>12.34</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_identifier_and_numbers(self):
         mathml = '<math><mrow><mn>12</mn><mi>x</mi></mrow></math>'
@@ -79,10 +79,10 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>12</m:t></m:r>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>x</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_operator(self):
         mathml = '<math><mrow><mn>3</mn><mo>-</mo><mn>2</mn></mrow></math>'
@@ -91,11 +91,11 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath>'
+            '<m:oMath><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>3</m:t></m:r>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>-</m:t></m:r>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>2</m:t></m:r>'
-            '</m:oMath>')
+            '</m:e></m:box></m:oMath>')
 
     def test_subscript(self):
         mathml = '<math><mrow><msub><mi>a</mi><mi>b</mi></msub></mrow></math>'
@@ -104,14 +104,14 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath><m:sSub>'
+            '<m:oMath><m:box><m:e><m:sSub>'
             '<m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>a</m:t></m:r>'
             '</m:e>'
             '<m:sub>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>b</m:t></m:r>'
             '</m:sub>'
-            '</m:sSub></m:oMath>')
+            '</m:sSub></m:e></m:box></m:oMath>')
 
     def test_superscript(self):
         mathml = '<math><mrow><msup><mi>a</mi><mi>b</mi></msup></mrow></math>'
@@ -120,14 +120,14 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath><m:sSup>'
+            '<m:oMath><m:box><m:e><m:sSup>'
             '<m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>a</m:t></m:r>'
             '</m:e>'
             '<m:sup>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>b</m:t></m:r>'
             '</m:sup>'
-            '</m:sSup></m:oMath>')
+            '</m:sSup></m:e></m:box></m:oMath>')
 
     def test_subsuperscript(self):
         mathml = (
@@ -139,7 +139,7 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath><m:sSubSup>'
+            '<m:oMath><m:box><m:e><m:sSubSup>'
             '<m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>a</m:t></m:r>'
             '</m:e>'
@@ -149,7 +149,7 @@ class ConvertTest(unittest.TestCase):
             '<m:sup>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>c</m:t></m:r>'
             '</m:sup>'
-            '</m:sSubSup></m:oMath>')
+            '</m:sSubSup></m:e></m:box></m:oMath>')
 
     def test_fraction(self):
         mathml = (
@@ -161,14 +161,14 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath><m:f>'
-            '<m:num>'
+            '<m:oMath><m:box><m:e><m:f>'
+            '<m:num><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>1</m:t></m:r>'
-            '</m:num>'
-            '<m:den>'
+            '</m:e></m:box></m:num>'
+            '<m:den><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>2</m:t></m:r>'
-            '</m:den>'
-            '</m:f></m:oMath>')
+            '</m:e></m:box></m:den>'
+            '</m:f></m:e></m:box></m:oMath>')
 
     def test_sqrt(self):
         mathml = (
@@ -180,11 +180,11 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath><m:rad>'
-            '<m:e>'
+            '<m:oMath><m:box><m:e><m:rad>'
+            '<m:e><m:box><m:e><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>2</m:t></m:r>'
-            '</m:e>'
-            '</m:rad></m:oMath>')
+            '</m:e></m:box></m:e></m:box></m:e>'
+            '</m:rad></m:e></m:box></m:oMath>')
 
     def test_root(self):
         mathml = (
@@ -196,14 +196,14 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath><m:rad>'
-            '<m:deg>'
+            '<m:oMath><m:box><m:e><m:rad>'
+            '<m:deg><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>3</m:t></m:r>'
-            '</m:deg>'
-            '<m:e>'
+            '</m:e></m:box></m:deg>'
+            '<m:e><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t>2</m:t></m:r>'
-            '</m:e>'
-            '</m:rad></m:oMath>')
+            '</m:e></m:box></m:e>'
+            '</m:rad></m:e></m:box></m:oMath>')
 
     def test_matrix1(self):
         mathml = (
@@ -216,21 +216,21 @@ class ConvertTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<m:oMath><m:m>'
+            '<m:oMath><m:box><m:e><m:m>'
             '<m:mr>'
-            '<m:e>'
+            '<m:e><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>a</m:t></m:r>'
-            '</m:e>'
-            '<m:e>'
+            '</m:e></m:box></m:e>'
+            '<m:e><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>b</m:t></m:r>'
-            '</m:e>'
+            '</m:e></m:box></m:e>'
             '</m:mr>'
             '<m:mr>'
-            '<m:e>'
+            '<m:e><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>c</m:t></m:r>'
-            '</m:e>'
-            '<m:e>'
+            '</m:e></m:box></m:e>'
+            '<m:e><m:box><m:e>'
             '<m:r><m:rPr><m:sty m:val="i"/></m:rPr><m:t>d</m:t></m:r>'
-            '</m:e>'
+            '</m:e></m:box></m:e>'
             '</m:mr>'
-            '</m:m></m:oMath>')
+            '</m:m></m:e></m:box></m:oMath>')
