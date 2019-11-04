@@ -988,6 +988,44 @@ class MTableData(InferredMRowElement):
     def to_str(self):
         return str(self.mrow)
 
+class MAction:
+    """Bind Action to Sub-Expression
+    <maction actiontype> expressoins </maction>
+    """
+    name = "maction"
+    num_args_map = {
+        'statusline': 2,
+        'tooltip': 2,
+        'input': 1,
+    }
+
+    def __init__(self, attrs):
+        self.children = []
+        self.attrs = attrs
+        if attrs.get('actiontype') is None:
+            raise RuntimeError(self.name + ' must have actiontype')
+
+    def __str__(self):
+        return str(self._selected_exp())
+
+    def append(self, child):
+        num_args = self.num_args_map.get(self.attrs['actiontype'])
+        if num_args is not None and len(self.children) == num_args:
+            raise RuntimeError('Too large number of children for ' + self.name)
+        self.children.append(child)
+
+    def is_space_like(self):
+        return self._selected_exp().is_space_like()
+
+    def embellished_op(self):
+        return self._selected_exp().embellished_op()
+
+    def _selected_exp(self):
+        if self.attrs['actiontype'] == 'toggle':
+            idx = int(self.attrs.get('selection', '1')) - 1
+        else:
+            idx = 0
+        return self.children[idx]
 
 class MathMLHandler(xml.sax.handler.ContentHandler):
     CONVERSION_MAP = dict((cls.name, cls) for cls in (
@@ -1001,6 +1039,7 @@ class MathMLHandler(xml.sax.handler.ContentHandler):
         MUnder, MOver, MUnderOver,
         MMultiScripts, MPreScripts, MNone,
         MTable, MTableRow, MTableData,
+        MAction,
         ))
 
     def __init__(self):
