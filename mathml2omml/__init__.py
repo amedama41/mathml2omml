@@ -817,10 +817,12 @@ class MUnderOver(NaryableElement):
         underscript = to_math_arg(self.children[1])
         overscript = to_math_arg(self.children[2])
         return ('<m:limLow>'
+                '<m:e>'
                 '<m:limUpp>'
                 '%s'
                 '<m:lim>%s</m:lim>'
                 '</m:limUpp>'
+                '</m:e>'
                 '<m:lim>%s</m:lim>'
                 '</m:limLow>') % (base, overscript, underscript)
 
