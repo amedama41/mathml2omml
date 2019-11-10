@@ -36,5 +36,7 @@ as a dictionary to the second argument:
 
 .. code:: python
 
+   import html.entities
+
    mathml = '<math><msubsup><mo>&int;</mo><mn>1</mn><mi>x</mi></msubsup></math>'
-   omml = math2omml.convert(mathml, {'int': '&#x222B;'})
+   omml = math2omml.convert(mathml, html.entities.name2codepoint)

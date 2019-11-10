@@ -1075,20 +1075,20 @@ def convert(mathml_xml, additional_entities=None):
     """
     handler = MathMLHandler()
     entities = {
-        'pi': '&#x03C0;',
-        'ExponentialE': '&#x2147;',
-        'ee': '&#x2147;',
-        'ImaginaryI': '&#x2148;',
-        'ii': '&#x2148;',
-        'gamma': '&#x03B3;',
-        'infin': '&#x221E;',
-        'infty': '&#x221E;',
+        'pi': 0x03c0,
+        'ExponentialE': 0x2147,
+        'ee': 0x2147,
+        'ImaginaryI': 0x2148,
+        'ii': 0x2148,
+        'gamma': 0x03b3,
+        'infin': 0x221e,
+        'infty': 0x221e,
     }
     if additional_entities is not None:
         entities.update(additional_entities)
     input_xml = (
         r"""<!DOCTYPE math [ """ +
-        ''.join('<!ENTITY %s "%s">' % item for item in entities.items()) +
+        ''.join('<!ENTITY %s "&#x%04X;">' % item for item in entities.items()) +
         r""" ]>""" +
         mathml_xml)
     xml.sax.parseString(input_xml, handler)
