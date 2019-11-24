@@ -1043,18 +1043,31 @@ class MathMLHandler(xml.sax.handler.ContentHandler):
         MTable, MTableRow, MTableData,
         MAction,
         ))
+    IGNORED_ELEMENTS = ('annotation-xml', 'annotation')
+    SKIPPED_ELEMENTS = ('semantics',)
 
     def __init__(self):
         super(MathMLHandler, self).__init__()
         self._stack = []
         self._stack.append([])
+        self._in_ignore_elems = 0
 
     def startElement(self, name, attrs):
+        if name in MathMLHandler.IGNORED_ELEMENTS:
+            self._in_ignore_elems += 1
+            return
+        if self._in_ignore_elems > 0 or name in MathMLHandler.SKIPPED_ELEMENTS:
+            return
         if name not in MathMLHandler.CONVERSION_MAP:
             raise NotImplementedError(name + ' is not Implemented')
         self._stack.append(MathMLHandler.CONVERSION_MAP[name](attrs))
 
     def endElement(self, name):
+        if name in MathMLHandler.IGNORED_ELEMENTS:
+            self._in_ignore_elems -= 1
+            return
+        if self._in_ignore_elems > 0 or name in MathMLHandler.SKIPPED_ELEMENTS:
+            return
         elem = self._stack.pop()
         if isinstance(elem, (MRow, InferredMRowElement)):
             elem.merge_children()
